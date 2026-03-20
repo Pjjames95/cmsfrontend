@@ -432,7 +432,7 @@ const ProjectsPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Church Projects</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4" style={{ paddingTop: '30px' }}>Church Projects</h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Discover the initiatives and developments happening in our church community.
             Track our progress and see how you can get involved.

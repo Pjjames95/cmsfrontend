@@ -7,7 +7,9 @@ import {
   ClockIcon, 
   MapPinIcon,
   EnvelopeIcon,
+  ArrowLeftIcon,
   PhoneIcon,
+  UserGroupIcon,
   ChevronRightIcon
 } from '@heroicons/react/24/outline'
 
@@ -85,7 +87,7 @@ const MinistriesPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Our Ministries</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4" style={{ paddingTop: '30px' }}>Our Ministries</h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Discover the various ways you can get involved and grow in your faith through our diverse ministries.
           </p>
@@ -310,31 +312,30 @@ const MinistryDetail = ({ ministry, onBack }) => {
             </div>
 
             {/* Call to Action */}
-            <div className="mt-8 pt-6 border-t border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Interested in Joining?</h3>
-              <div className="mt-6">
-                <Link
-                  to={`/ministries/register/${ministry.id}`}
-                  className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
-                >
-                  {/* <UserGroupIcon className="h-5 w-5 mr-2" /> */}
-                  Join This Ministry
-                </Link>
-              </div>
-              <div className="flex flex-wrap gap-4">
+            <div className="mt-8 flex flex-wrap gap-4">
+              <Link
+                to={`/ministries/register/${ministry.id}`}
+                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-md text-white bg-indigo-600 hover:bg-indigo-700 hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300"
+              >
+                <UserGroupIcon className="h-5 w-5 mr-2" />
+                Join This Ministry
+              </Link>
+              <button
+                onClick={onBack}
+                className="inline-flex items-center px-6 py-3 border-2 border-gray-300 text-base font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 hover:border-indigo-300 transform hover:-translate-y-0.5 transition-all duration-300"
+              >
+                <ArrowLeftIcon className="h-5 w-5 mr-2" />
+                Back to Ministries
+              </button>
+              {ministry.contact_email && (
                 <a
-                  href={`mailto:${ministry.contact_email || ministry.leader?.email || 'info@church.org'}`}
-                  className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
+                  href={`mailto:${ministry.contact_email}`}
+                  className="inline-flex items-center px-6 py-3 border-2 border-indigo-200 text-base font-medium rounded-lg text-indigo-700 bg-indigo-50 hover:bg-indigo-100 hover:border-indigo-300 transform hover:-translate-y-0.5 transition-all duration-300"
                 >
-                  Contact Ministry Leader
+                  <EnvelopeIcon className="h-5 w-5 mr-2" />
+                  Contact Leader
                 </a>
-                <button
-                  onClick={onBack}
-                  className="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                >
-                  Browse Other Ministries
-                </button>
-              </div>
+              )}
             </div>
           </div>
         </div>

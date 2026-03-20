@@ -255,7 +255,7 @@ const SermonsPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Sermons</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4" style={{ paddingTop: '30px' }}>Sermons</h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Listen to our latest sermons and grow in your faith through God's Word.
           </p>

@@ -40,3 +40,41 @@
 .read-the-docs {
   color: #888;
 }
+
+
+@keyframes shine {
+  100% {
+    left: 200%;
+  }
+}
+
+.animate-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.animate-shine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: shine 1.5s ease-in-out infinite;
+}
+
+/* Add scroll margin to all main headings */
+.page-heading {
+  scroll-margin-top: 300px; /* Adjust based on your navbar height */
+}
+
+/* Smooth scrolling for the whole page */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Fix for anchor links */
+.hash-link {
+  scroll-margin-top: 100px;
+}

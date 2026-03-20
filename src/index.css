@@ -1,2 +1,26 @@
 @import "tailwindcss";
 
+
+@keyframes shine {
+  100% {
+    left: 200%;
+  }
+}
+
+.animate-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.animate-shine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: shine 1.5s ease-in-out infinite;
+}
+
+

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useAdminAuth } from '../../hooks/useAdminAuth'
-import { ShieldCheckIcon } from '@heroicons/react/24/outline'
+import { ShieldCheckIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 
 const AdminLoginPage = () => {
   const navigate = useNavigate()
@@ -12,8 +12,8 @@ const AdminLoginPage = () => {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [message, setMessage] = useState(location.state?.message || '')
 
-  // Redirect if already logged in
   useEffect(() => {
     if (adminUser && isAdmin) {
       const from = location.state?.from?.pathname || '/admin/dashboard'
@@ -37,7 +37,6 @@ const AdminLoginPage = () => {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-indigo-900 via-purple-900 to-pink-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      {/* Secret pattern overlay */}
       <div className="absolute inset-0 bg-black opacity-10 pattern-grid-lg"></div>
       
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
@@ -57,6 +56,22 @@ const AdminLoginPage = () => {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
         <div className="bg-white py-8 px-4 shadow-2xl sm:rounded-lg sm:px-10 backdrop-blur-sm bg-opacity-95">
           
+          {/* Session expiry message */}
+          {message && (
+            <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+              <div className="flex">
+                <div className="shrink-0">
+                  <ExclamationTriangleIcon className="h-5 w-5 text-yellow-400" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-yellow-700">
+                    {message}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Security notice */}
           <div className="mb-6 bg-indigo-50 border-l-4 border-indigo-600 p-4 rounded">
             <div className="flex">
@@ -163,7 +178,7 @@ const AdminLoginPage = () => {
         <div className="mt-4 text-center">
           <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
             <span className="h-2 w-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
-            Secure Connection • 256-bit SSL
+            Secure Connection • 30-minute session timeout
           </span>
         </div>
       </div>

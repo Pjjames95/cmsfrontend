@@ -13,76 +13,27 @@ import {
   FolderIcon,
   HeartIcon,
   EnvelopeIcon,
-  // ChurchIcon
+  MagnifyingGlassIcon,
+  UserCircleIcon
 } from '@heroicons/react/24/outline'
 
 const navigation = [
-  { 
-    name: 'Home', 
-    href: '/', 
-    icon: HomeIcon,
-    description: 'Welcome to our church'
-  },
-  { 
-    name: 'About', 
-    href: '/about', 
-    icon: HeartIcon,
-    description: 'Our story & beliefs'
-  },
-  { 
-    name: 'Ministries', 
-    href: '/ministries', 
-    icon: UserGroupIcon,
-    description: 'Get involved'
-  },
-  { 
-    name: 'Sermons', 
-    href: '/sermons', 
-    icon: MusicalNoteIcon,
-    description: 'Listen to messages'
-  },
-  { 
-    name: 'Services', 
-    href: '/services', 
-    icon: CalendarIcon,
-    description: 'Join us worship'
-  },
-  { 
-    name: 'News', 
-    href: '/news', 
-    icon: NewspaperIcon,
-    description: 'Latest updates'
-  },
-  { 
-    name: 'Hymns', 
-    href: '/hymns', 
-    icon: BookOpenIcon,
-    description: 'Worship in song'
-  },
-  { 
-    name: 'Projects', 
-    href: '/projects', 
-    icon: FolderIcon,
-    description: 'Church initiatives'
-  },
-  { 
-    name: 'Choir', 
-    href: '/choir', 
-    icon: MusicalNoteIcon,
-    description: 'Our music ministry'
-  },
-  { 
-    name: 'Contact', 
-    href: '/contact', 
-    icon: EnvelopeIcon,
-    description: 'Get in touch'
-  },
+  { name: 'Home', href: '/', icon: HomeIcon },
+  { name: 'About', href: '/about', icon: HeartIcon },
+  { name: 'Ministries', href: '/ministries', icon: UserGroupIcon },
+  { name: 'Sermons', href: '/sermons', icon: MusicalNoteIcon },
+  { name: 'Services', href: '/services', icon: CalendarIcon },
+  { name: 'News', href: '/news', icon: NewspaperIcon },
+  { name: 'Hymns', href: '/hymns', icon: BookOpenIcon },
+  { name: 'Projects', href: '/projects', icon: FolderIcon },
+  { name: 'Choir', href: '/choir', icon: MusicalNoteIcon },
+  { name: 'Contact', href: '/contact', icon: EnvelopeIcon },
 ]
 
 const PublicNavbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const [activeDropdown, setActiveDropdown] = useState(null)
+  const [searchOpen, setSearchOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -90,16 +41,10 @@ const PublicNavbar = () => {
   const [clickCount, setClickCount] = useState(0)
   const [lastClick, setLastClick] = useState(0)
 
-  // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 20) {
-        setScrolled(true)
-      } else {
-        setScrolled(false)
-      }
+      setScrolled(window.scrollY > 20)
     }
-
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
@@ -109,7 +54,6 @@ const PublicNavbar = () => {
     if (now - lastClick < 500) {
       const newCount = clickCount + 1
       setClickCount(newCount)
-      
       if (newCount === 3) {
         navigate('/admin/login')
         setClickCount(0)
@@ -120,56 +64,51 @@ const PublicNavbar = () => {
     setLastClick(now)
   }
 
+  // Split navigation into left and right sections
+  const midpoint = Math.ceil(navigation.length / 2)
+  const leftNav = navigation.slice(0, midpoint)
+  const rightNav = navigation.slice(midpoint)
+
   return (
-    <nav 
-      className={`fixed w-full z-50 transition-all duration-500 ${
-        scrolled 
-          ? 'bg-white/95 backdrop-blur-md shadow-lg py-2' 
-          : 'bg-linear-to-r from-indigo-900/90 to-purple-900/90 backdrop-blur-sm py-4'
-      }`}
-    >
+    <nav className={`fixed w-full z-50 transition-all duration-500 ${
+      scrolled 
+        ? 'bg-white/95 backdrop-blur-md shadow-lg py-2' 
+        : 'bg-linear-to-r from-indigo-900/95 to-purple-900/95 backdrop-blur-sm py-4'
+    }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
-          {/* Logo and brand */}
-          <div className="flex items-center space-x-3 group">
+          {/* Logo - Left */}
+          <div className="flex items-center space-x-3">
             <button 
               onClick={handleLogoClick} 
               className="focus:outline-none transform transition-transform hover:scale-110 active:scale-95"
-              title="Click 3 times for admin access"
             >
-              <div className={`h-12 w-12 rounded-xl flex items-center justify-center shadow-lg transition-all duration-300 ${
+              <div className={`h-10 w-10 rounded-xl flex items-center justify-center shadow-lg ${
                 scrolled 
-                  ? 'bg-linear-to-br from-indigo-600 to-purple-600 group-hover:shadow-indigo-200' 
-                  : 'bg-white/20 backdrop-blur-md group-hover:bg-white/30'
+                  ? 'bg-linear-to-br from-indigo-600 to-purple-600' 
+                  : 'bg-white/20 backdrop-blur-md'
               }`}>
-                <span className="text-white font-bold text-2xl transform group-hover:rotate-12 transition-transform">⛪</span>
+                <span className="text-white font-bold text-xl">⛪</span>
               </div>
             </button>
-            <div className="flex flex-col">
-              <span className={`text-xl font-bold tracking-tight transition-colors duration-300 ${
-                scrolled ? 'text-gray-900' : 'text-white'
-              }`}>
-                Grace Church
-              </span>
-              <span className={`text-xs tracking-wider transition-colors duration-300 ${
-                scrolled ? 'text-gray-500' : 'text-indigo-200'
-              }`}>
-                WELCOME HOME
-              </span>
-            </div>
+            <span className={`text-xl font-bold tracking-tight ${
+              scrolled ? 'text-gray-900' : 'text-white'
+            }`}>
+              Grace Church
+            </span>
           </div>
 
-          {/* Desktop menu - Center */}
-          <div className="hidden lg:flex lg:items-center lg:space-x-1">
-            {navigation.map((item) => {
+          {/* Desktop Navigation - Centered and Spread Out */}
+          <div className="hidden lg:flex lg:items-center lg:justify-center lg:flex-1 lg:space-x-1">
+            {/* Left navigation items */}
+            {leftNav.map((item) => {
               const isActive = location.pathname === item.href
               const Icon = item.icon
-              
               return (
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`group relative px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                  className={`group relative px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center space-x-1 ${
                     scrolled
                       ? isActive
                         ? 'text-indigo-600 bg-indigo-50'
@@ -179,127 +118,117 @@ const PublicNavbar = () => {
                         : 'text-white/90 hover:text-white hover:bg-white/10'
                   }`}
                 >
-                  <div className="flex items-center space-x-1">
-                    <Icon className={`h-4 w-4 transition-transform group-hover:scale-110 ${
-                      isActive ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'
-                    }`} />
-                    <span>{item.name}</span>
-                  </div>
-                  
-                  {/* Tooltip on hover */}
-                  <div className="absolute left-1/2 -bottom-12 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                    <div className="bg-gray-900 text-white text-xs py-1 px-2 rounded whitespace-nowrap">
-                      {item.description}
-                      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1 w-2 h-2 bg-gray-900 rotate-45"></div>
-                    </div>
-                  </div>
+                  <Icon className="h-4 w-4" />
+                  <span>{item.name}</span>
+                </Link>
+              )
+            })}
+
+            {/* Right navigation items */}
+            {rightNav.map((item) => {
+              const isActive = location.pathname === item.href
+              const Icon = item.icon
+              return (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className={`group relative px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center space-x-1 ${
+                    scrolled
+                      ? isActive
+                        ? 'text-indigo-600 bg-indigo-50'
+                        : 'text-gray-700 hover:text-indigo-600 hover:bg-indigo-50/50'
+                      : isActive
+                        ? 'text-white bg-white/20'
+                        : 'text-white/90 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span>{item.name}</span>
                 </Link>
               )
             })}
           </div>
 
-          {/* Right section - CTA Button */}
-          <div className="hidden lg:block">
+          {/* Right side actions */}
+          <div className="hidden lg:flex items-center space-x-2">
+            <button
+              onClick={() => setSearchOpen(!searchOpen)}
+              className={`p-2 rounded-lg transition-colors ${
+                scrolled 
+                  ? 'text-gray-600 hover:text-indigo-600 hover:bg-gray-100' 
+                  : 'text-white/80 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <MagnifyingGlassIcon className="h-5 w-5" />
+            </button>
             <Link
-              to="/services"
-              className={`inline-flex items-center px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95 ${
+              to="/contact"
+              className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center space-x-2 ${
                 scrolled
-                  ? 'bg-linear-to-r from-indigo-600 to-purple-600 text-white shadow-lg hover:shadow-xl'
+                  ? 'bg-linear-to-r from-indigo-600 to-purple-600 text-white shadow-md hover:shadow-lg'
                   : 'bg-white text-indigo-900 hover:bg-indigo-50'
               }`}
             >
-              <CalendarIcon className="h-4 w-4 mr-2" />
-              Join Us
+              <UserCircleIcon className="h-4 w-4" />
+              <span>Visit Us</span>
             </Link>
           </div>
 
           {/* Mobile menu button */}
-          <div className="flex items-center lg:hidden">
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className={`inline-flex items-center justify-center p-2 rounded-lg transition-all duration-300 ${
-                scrolled
-                  ? 'text-gray-700 hover:text-indigo-600 hover:bg-indigo-50'
-                  : 'text-white hover:bg-white/20'
-              }`}
-            >
-              <span className="sr-only">Open main menu</span>
-              {mobileMenuOpen ? (
-                <XMarkIcon className="block h-6 w-6" />
-              ) : (
-                <Bars3Icon className="block h-6 w-6" />
-              )}
-            </button>
-          </div>
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className={`lg:hidden p-2 rounded-lg transition-colors ${
+              scrolled
+                ? 'text-gray-700 hover:text-indigo-600 hover:bg-gray-100'
+                : 'text-white hover:bg-white/20'
+            }`}
+          >
+            {mobileMenuOpen ? (
+              <XMarkIcon className="h-6 w-6" />
+            ) : (
+              <Bars3Icon className="h-6 w-6" />
+            )}
+          </button>
         </div>
+
+        {/* Search bar (expands when search is clicked) */}
+        
       </div>
 
-      {/* Mobile menu - Enhanced */}
-      <div 
-        className={`lg:hidden transition-all duration-500 ease-in-out transform ${
-          mobileMenuOpen 
-            ? 'max-h-screen opacity-100 translate-y-0' 
-            : 'max-h-0 opacity-0 -translate-y-4 pointer-events-none'
-        } overflow-hidden`}
-      >
-        <div className={`px-4 pt-2 pb-4 space-y-2 ${
+      {/* Mobile menu */}
+      <div className={`lg:hidden transition-all duration-500 ease-in-out transform ${
+        mobileMenuOpen 
+          ? 'max-h-screen opacity-100 translate-y-0' 
+          : 'max-h-0 opacity-0 -translate-y-4 pointer-events-none'
+      } overflow-hidden`}>
+        <div className={`px-4 pt-2 pb-4 space-y-1 ${
           scrolled ? 'bg-white' : 'bg-linear-to-b from-indigo-900 to-purple-900'
         }`}>
           {navigation.map((item) => {
             const isActive = location.pathname === item.href
             const Icon = item.icon
-            
             return (
               <Link
                 key={item.name}
                 to={item.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`group flex items-center justify-between p-3 rounded-lg transition-all duration-300 ${
+                className={`flex items-center space-x-3 p-3 rounded-lg transition-all ${
                   scrolled
                     ? isActive
                       ? 'bg-indigo-50 text-indigo-600'
                       : 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600'
                     : isActive
                       ? 'bg-white/20 text-white'
-                      : 'text-white/90 hover:bg-white/10 hover:text-white'
+                      : 'text-white/80 hover:bg-white/10 hover:text-white'
                 }`}
               >
-                <div className="flex items-center space-x-3">
-                  <Icon className="h-5 w-5" />
-                  <div>
-                    <div className="font-medium">{item.name}</div>
-                    <div className={`text-xs ${
-                      scrolled ? 'text-gray-500' : 'text-indigo-200'
-                    }`}>
-                      {item.description}
-                    </div>
-                  </div>
-                </div>
-                <ChevronDownIcon className={`h-4 w-4 transform -rotate-90 transition-transform group-hover:translate-x-1 ${
-                  scrolled ? 'text-gray-400' : 'text-white/60'
-                }`} />
+                <Icon className="h-5 w-5" />
+                <span className="font-medium">{item.name}</span>
               </Link>
             )
           })}
-          
-          {/* Mobile CTA */}
-          <Link
-            to="/services"
-            onClick={() => setMobileMenuOpen(false)}
-            className={`mt-4 block text-center px-4 py-3 rounded-lg font-medium transition-all duration-300 ${
-              scrolled
-                ? 'bg-linear-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
-                : 'bg-white text-indigo-900'
-            }`}
-          >
-            <CalendarIcon className="h-5 w-5 inline mr-2" />
-            Join Us This Sunday
-          </Link>
         </div>
       </div>
-
-      {/* Progress bar - subtle decorative element */}
-      <div className="absolute bottom-0 left-0 w-full h-0.5 bg-linear-to-r from-transparent via-indigo-400 to-transparent opacity-50"></div>
     </nav>
   )
 }
