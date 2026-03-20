@@ -14,9 +14,12 @@ import {
   PlayIcon,
   ArrowDownTrayIcon,
   ShareIcon,
-  XMarkIcon
+  XMarkIcon,
+  DocumentIcon,
+  DocumentTextIcon
 } from '@heroicons/react/24/outline'
-import { PlayIcon as PlayIconSolid } from '@heroicons/react/24/solid'
+import { PlayIcon as PlayIconSolid, EyeIcon as ViewIcon } from '@heroicons/react/24/solid'
+import toast from 'react-hot-toast'
 
 const SermonsPage = () => {
   const location = useLocation()
@@ -32,6 +35,11 @@ const SermonsPage = () => {
   const [selectedSeries, setSelectedSeries] = useState('all')
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentAudio, setCurrentAudio] = useState(null)
+  
+  // Notes modal state
+  const [showNotesModal, setShowNotesModal] = useState(false)
+  const [notesContent, setNotesContent] = useState(null)
+  const [notesType, setNotesType] = useState(null)
 
   // Check if we have a sermon ID in the URL hash
   useEffect(() => {
@@ -132,6 +140,62 @@ const SermonsPage = () => {
     }
   }
 
+  const handleDownloadNotes = async (sermon) => {
+    try {
+      const url = sermon.notes_url
+      if (!url) {
+        toast.error('No notes available for this sermon')
+        return
+      }
+
+      const response = await fetch(url)
+      const blob = await response.blob()
+      const downloadUrl = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = downloadUrl
+      
+      // Determine file extension
+      const fileExt = url.split('.').pop().split('?')[0]
+      link.download = `${sermon.title} - ${sermon.speaker}.${fileExt}`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(downloadUrl)
+
+      toast.success('Download started')
+    } catch (error) {
+      console.error('Error downloading notes:', error)
+      toast.error('Failed to download notes')
+    }
+  }
+
+  const handleViewNotes = async (sermon) => {
+    if (!sermon.notes_url) return
+
+    try {
+      // For PDFs, open in new tab
+      if (sermon.notes_url.toLowerCase().endsWith('.pdf')) {
+        window.open(sermon.notes_url, '_blank')
+        toast.success('Opening PDF in new tab')
+      } 
+      // For DOCX files, show download prompt
+      else if (sermon.notes_url.toLowerCase().endsWith('.docx')) {
+        setNotesType('docx')
+        setShowNotesModal(true)
+        setNotesContent(sermon.notes_url)
+      }
+      // For other file types
+      else {
+        setNotesType('other')
+        setShowNotesModal(true)
+        setNotesContent(sermon.notes_url)
+      }
+    } catch (error) {
+      console.error('Error viewing notes:', error)
+      toast.error('Failed to load notes')
+    }
+  }
+
   const handleDownload = async (sermon, type) => {
     try {
       const url = type === 'audio' ? sermon.audio_url : sermon.notes_url
@@ -142,15 +206,21 @@ const SermonsPage = () => {
       const downloadUrl = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = downloadUrl
-      link.download = `${sermon.title} - ${sermon.speaker}.${type === 'audio' ? 'mp3' : 'pdf'}`
+      
+      // Determine file extension from URL
+      const fileExt = url.split('.').pop().split('?')[0]
+      const fileType = type === 'audio' ? 'mp3' : fileExt
+      
+      link.download = `${sermon.title} - ${sermon.speaker}.${fileType}`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
       window.URL.revokeObjectURL(downloadUrl)
 
-      // You could increment download count here
+      toast.success('Download started')
     } catch (error) {
       console.error('Error downloading file:', error)
+      toast.error('Failed to download file')
     }
   }
 
@@ -168,7 +238,7 @@ const SermonsPage = () => {
     } else {
       // Fallback: copy link to clipboard
       navigator.clipboard.writeText(`${window.location.origin}/sermons#${sermon.id}`)
-      alert('Link copied to clipboard!')
+      toast.success('Link copied to clipboard!')
     }
   }
 
@@ -243,6 +313,8 @@ const SermonsPage = () => {
         onStop={handleStopAudio}
         onDownload={handleDownload}
         onShare={() => handleShare(selectedSermon)}
+        onViewNotes={handleViewNotes}
+        onDownloadNotes={handleDownloadNotes}
         isPlaying={isPlaying && currentAudio?.src?.includes(selectedSermon.audio_url)}
         formatDate={formatDate}
         formatDuration={formatDuration}
@@ -255,7 +327,7 @@ const SermonsPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4" style={{ paddingTop: '30px' }}>Sermons</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Sermons</h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Listen to our latest sermons and grow in your faith through God's Word.
           </p>
@@ -303,6 +375,12 @@ const SermonsPage = () => {
                         {sermon.view_count || 0}
                       </div>
                     </div>
+                    {sermon.notes_url && (
+                      <div className="mt-2 flex items-center text-xs text-gray-500">
+                        <DocumentIcon className="h-3 w-3 mr-1" />
+                        Notes available
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -424,11 +502,27 @@ const SermonsPage = () => {
                     </div>
                   </div>
 
-                  {/* Listen Now */}
-                  <div className="mt-4 flex items-center text-indigo-600 text-sm font-medium">
-                    <PlayIcon className="h-4 w-4 mr-1" />
-                    Listen Now
-                    <ChevronRightIcon className="h-4 w-4 ml-1" />
+                  {/* Notes Indicator and Listen Button */}
+                  <div className="mt-4 flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      {sermon.notes_url && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDownloadNotes(sermon)
+                          }}
+                          className="p-2 text-gray-400 hover:text-green-600 transition-colors"
+                          title="Download Notes"
+                        >
+                          <ArrowDownTrayIcon className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                    <div className="flex items-center text-indigo-600 text-sm font-medium">
+                      <PlayIcon className="h-4 w-4 mr-1" />
+                      Listen Now
+                      <ChevronRightIcon className="h-4 w-4 ml-1" />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -436,15 +530,103 @@ const SermonsPage = () => {
           </div>
         )}
       </div>
+
+      {/* Notes Modal for non-PDF files */}
+      {showNotesModal && notesContent && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="text-lg font-medium text-gray-900">Sermon Notes</h3>
+              <button
+                onClick={() => {
+                  setShowNotesModal(false)
+                  setNotesContent(null)
+                  setNotesType(null)
+                }}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <XMarkIcon className="h-6 w-6" />
+              </button>
+            </div>
+            <div className="p-4 overflow-y-auto max-h-[calc(90vh-80px)]">
+              {notesType === 'docx' && (
+                <div className="text-center">
+                  <DocumentTextIcon className="h-24 w-24 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600 mb-4">
+                    DOCX files cannot be previewed directly. Please download to view.
+                  </p>
+                  <button
+                    onClick={() => {
+                      // Trigger download
+                      const link = document.createElement('a')
+                      link.href = notesContent
+                      link.download = 'sermon-notes.docx'
+                      document.body.appendChild(link)
+                      link.click()
+                      document.body.removeChild(link)
+                      setShowNotesModal(false)
+                      toast.success('Download started')
+                    }}
+                    className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+                  >
+                    <ArrowDownTrayIcon className="h-5 w-5 mr-2" />
+                    Download to View
+                  </button>
+                </div>
+              )}
+              {notesType === 'other' && (
+                <div className="text-center">
+                  <DocumentIcon className="h-24 w-24 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600 mb-4">
+                    This file type cannot be previewed directly. Please download to view.
+                  </p>
+                  <button
+                    onClick={() => {
+                      const link = document.createElement('a')
+                      link.href = notesContent
+                      link.download = 'sermon-notes'
+                      document.body.appendChild(link)
+                      link.click()
+                      document.body.removeChild(link)
+                      setShowNotesModal(false)
+                      toast.success('Download started')
+                    }}
+                    className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                  >
+                    <ArrowDownTrayIcon className="h-5 w-5 mr-2" />
+                    Download File
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
 // Sermon Detail Component
 const SermonDetail = ({ 
-  sermon, onBack, onPlay, onStop, onDownload, onShare,
+  sermon, onBack, onPlay, onStop, onDownload, onShare, onViewNotes, onDownloadNotes,
   isPlaying, formatDate, formatDuration 
 }) => {
+  const getNotesIcon = () => {
+    if (!sermon.notes_url) return null
+    if (sermon.notes_url.toLowerCase().endsWith('.pdf')) {
+      return <DocumentIcon className="h-5 w-5 mr-2 text-red-500" />
+    }
+    return <DocumentTextIcon className="h-5 w-5 mr-2 text-blue-500" />
+  }
+
+  const getNotesButtonText = () => {
+    if (!sermon.notes_url) return null
+    if (sermon.notes_url.toLowerCase().endsWith('.pdf')) {
+      return 'View PDF Notes'
+    }
+    return 'View Notes'
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -574,15 +756,6 @@ const SermonDetail = ({
                         <ArrowDownTrayIcon className="h-5 w-5" />
                       </button>
                     )}
-                    {sermon.notes_url && (
-                      <button
-                        onClick={() => onDownload(sermon, 'notes')}
-                        className="p-2 text-gray-600 hover:text-indigo-600"
-                        title="Download Notes"
-                      >
-                        <BookOpenIcon className="h-5 w-5" />
-                      </button>
-                    )}
                     <button
                       onClick={() => onShare(sermon)}
                       className="p-2 text-gray-600 hover:text-indigo-600"
@@ -605,8 +778,42 @@ const SermonDetail = ({
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700"
                 >
                   <PlayIcon className="h-4 w-4 mr-2" />
-                  Watch on YouTube
+                  Watch on {sermon.video_url.includes('youtube') ? 'YouTube' : 'Video'}
                 </a>
+              </div>
+            )}
+
+            {/* Notes Section */}
+            {sermon.notes_url && (
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Sermon Notes</h3>
+                <div className="flex flex-wrap gap-3">
+                  {sermon.notes_url.toLowerCase().endsWith('.pdf') && (
+                    <a
+                      href={sermon.notes_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                    >
+                      {getNotesIcon()}
+                      View PDF Notes
+                    </a>
+                  )}
+                  <button
+                    onClick={() => onViewNotes(sermon)}
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                  >
+                    <ViewIcon className="h-5 w-5 mr-2 text-blue-500" />
+                    {getNotesButtonText()}
+                  </button>
+                  <button
+                    onClick={() => onDownloadNotes(sermon)}
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                  >
+                    <ArrowDownTrayIcon className="h-5 w-5 mr-2 text-green-500" />
+                    Download {sermon.notes_url.toLowerCase().endsWith('.pdf') ? 'PDF' : 'Notes'}
+                  </button>
+                </div>
               </div>
             )}
 
@@ -628,15 +835,11 @@ const SermonDetail = ({
               </div>
             )}
 
-            {/* Stats */}
-            <div className="mt-8 pt-6 border-t border-gray-200 flex justify-between text-sm text-gray-500">
+            {/* Stats - Removed download count, only showing views */}
+            <div className="mt-8 pt-6 border-t border-gray-200 flex justify-start text-sm text-gray-500">
               <div className="flex items-center">
                 <EyeIcon className="h-4 w-4 mr-1" />
                 {sermon.view_count || 0} views
-              </div>
-              <div className="flex items-center">
-                <ArrowDownTrayIcon className="h-4 w-4 mr-1" />
-                {sermon.download_count || 0} downloads
               </div>
             </div>
           </div>

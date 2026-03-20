@@ -142,6 +142,18 @@ const SermonsManager = () => {
     const file = e.target.files[0]
     if (!file) return
 
+    // Validate file type based on upload type
+    if (type === 'notes') {
+      const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+      const allowedExtensions = ['.pdf', '.docx']
+      const fileExt = '.' + file.name.split('.').pop().toLowerCase()
+      
+      if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExt)) {
+        toast.error('Please upload a PDF or DOCX file')
+        return
+      }
+    }
+
     switch(type) {
       case 'audio':
         setAudioFile(file)
@@ -162,14 +174,41 @@ const SermonsManager = () => {
 
   const uploadFile = async (file, bucket, folder) => {
     try {
+      if (!file) return null
+      
+      // Validate file size (max 20MB for notes, 10MB for others)
+      const maxSize = bucket === 'sermon-notes' ? 20 * 1024 * 1024 : 10 * 1024 * 1024 // 20MB for notes, 10MB for others
+      if (file.size > maxSize) {
+        toast.error(`File too large. Maximum size is ${maxSize / (1024 * 1024)}MB`)
+        return null
+      }
+
+      // Validate file type for notes
+      if (bucket === 'sermon-notes') {
+        const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+        const allowedExtensions = ['.pdf', '.docx']
+        const fileExt = '.' + file.name.split('.').pop().toLowerCase()
+        
+        if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExt)) {
+          toast.error('Please upload a PDF or DOCX file')
+          return null
+        }
+      }
+
       const fileExt = file.name.split('.').pop()
       const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
       
       const { error: uploadError } = await supabase.storage
         .from(bucket)
-        .upload(fileName, file)
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        })
 
-      if (uploadError) throw uploadError
+      if (uploadError) {
+        console.error('Upload error details:', uploadError)
+        throw uploadError
+      }
 
       const { data: { publicUrl } } = supabase.storage
         .from(bucket)
@@ -178,6 +217,7 @@ const SermonsManager = () => {
       return publicUrl
     } catch (error) {
       console.error(`Error uploading to ${bucket}:`, error)
+      toast.error(`Failed to upload file: ${error.message}`)
       throw error
     }
   }
@@ -781,18 +821,26 @@ const SermonModal = ({
             </div>
 
             {/* Notes Upload */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                <DocumentIcon className="h-4 w-4 inline mr-1" />
-                Sermon Notes (PDF)
-              </label>
-              <input
-                type="file"
-                accept=".pdf"
-                onChange={onNotesChange}
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-              />
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <DocumentIcon className="h-4 w-4 inline mr-1" />
+                  Sermon Notes (PDF or DOCX)
+                </label>
+                <input
+                  type="file"
+                  accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  onChange={onNotesChange}
+                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                />
+                {sermon?.notes_url && !notesFile && (
+                  <p className="mt-1 text-xs text-gray-500">
+                    Current file exists: {sermon.notes_url.split('/').pop()}
+                  </p>
+                )}
+                <p className="mt-1 text-xs text-gray-400">
+                  Accepted formats: PDF, DOCX (Max 20MB)
+                </p>
+              </div>
           </div>
 
           {/* Status Toggles */}

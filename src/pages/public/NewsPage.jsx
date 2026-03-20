@@ -222,7 +222,8 @@ return (
                     </p>
                     <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
                       <div className="flex items-center">
-                        <CalendarIcon className="h-4 w-4 mr-1" />
+                       <p>Published on: </p>
+                        <CalendarIcon className="h-4 w-4 mr-1" /> 
                         {formatDate(article.published_at || article.created_at)}
                       </div>
                       <div className="flex items-center">
@@ -306,6 +307,7 @@ return (
                       {article.category || 'General'}
                     </span>
                     <span className="text-sm text-gray-500">
+                      <p>Published on: </p>
                       {formatDate(article.published_at || article.created_at)}
                     </span>
                   </div>
@@ -387,6 +389,7 @@ const ArticleDetail = ({ article, onBack, onShare, formatDate }) => {
               </span>
               <div className="flex items-center space-x-4 text-sm text-gray-500">
                 <div className="flex items-center">
+                  <p>Published on: </p>
                   <CalendarIcon className="h-4 w-4 mr-1" />
                   {formatDate(article.published_at || article.created_at)}
                 </div>
