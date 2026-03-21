@@ -1,6 +1,5 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import churchImage from '/images/church.jpg?url'
 import { 
   HeartIcon,
   UserGroupIcon,
@@ -57,6 +56,8 @@ const AboutPage = () => {
     }
   ]
 
+  const churchImage = '/images/church.jpg'
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
@@ -91,8 +92,30 @@ const AboutPage = () => {
               international missions.
             </p>
           </div>
-          <div className="bg-gray-200 h-96 rounded-lg flex items-center justify-center overflow-hidden">
-          <img src={churchImage} alt="Church Building" />
+          <div className="bg-gray-200 h-96 rounded-lg overflow-hidden relative">
+          <img 
+            src={churchImage} 
+            alt="Grace Church Building" 
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              console.error('Image failed to load:', e.target.src)
+              e.target.onerror = null
+              e.target.style.display = 'none'
+              // Show fallback content
+              const parent = e.target.parentElement
+              if (parent) {
+                parent.innerHTML = `
+                  <div class="w-full h-full bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                    <div class="text-center text-white">
+                      <span class="text-6xl mb-4 block">⛪</span>
+                      <p class="text-xl font-semibold">Grace Church</p>
+                      <p class="text-sm opacity-80 mt-2">A place of worship and community</p>
+                    </div>
+                  </div>
+                `
+              }
+            }}
+          />
         </div>
         </div>
       </div>
