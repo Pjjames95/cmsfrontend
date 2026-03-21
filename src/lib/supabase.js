@@ -131,6 +131,7 @@ export const publicAPI = {
   },
 
   // Hymn Books functions
+    // Hymn Books functions
   getHymnBooks: async () => {
     const { data, error } = await supabase
       .from('hymn_books')
@@ -139,6 +140,18 @@ export const publicAPI = {
       .order('title', { ascending: true })
     return { data, error }
   },
+
+  // Get single hymn book by ID
+  getHymnBookById: async (id) => {
+    const { data, error } = await supabase
+      .from('hymn_books')
+      .select('*')
+      .eq('id', id)
+      .eq('is_public', true)
+      .single()
+    return { data, error }
+  },
+ 
 
   getFeaturedHymnBooks: async (limit = 3) => {
     const { data, error } = await supabase
@@ -150,14 +163,11 @@ export const publicAPI = {
       .limit(limit)
     return { data, error }
   },
-
-  getHymnBookById: async (id) => {
-    const { data, error } = await supabase
-      .from('hymn_books')
-      .select('*')
-      .eq('id', id)
-      .eq('is_public', true)
-      .single()
+  // Increment hymn book view count
+  incrementHymnBookViewCount: async (id) => {
+    const { data, error } = await supabase.rpc('increment_hymn_book_views', { 
+      book_id: id 
+    })
     return { data, error }
   },
 

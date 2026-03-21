@@ -91,7 +91,7 @@ const AboutPage = () => {
             </p>
           </div>
           <div className="bg-gray-200 h-96 rounded-lg flex items-center justify-center">
-            <span className="text-gray-500">Church History Image</span>
+              <img src="src/assets/church.jpg" alt="Church Building" className="h-96 object-cover rounded-lg" />
           </div>
         </div>
       </div>

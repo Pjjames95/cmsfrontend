@@ -100,11 +100,11 @@ const ContactPage = () => {
           {/* Map */}
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Find Us</h2>
-            <div className="bg-gray-200 h-96 rounded-lg flex items-center justify-center">
-              <span className="text-gray-500">
+            <div className="bg-gray-200 h-96 rounded-lg flex items-center">
+              {/* <span className="text-gray-500"> */}
                 <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d15958.111304828482!2d34.783232!3d-0.6914048!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2ske!4v1765284482292!5m2!1sen!2ske" 
                 width="100%" height="100%" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-              </span>
+              {/* </span> */}
             </div>
           </div>
 

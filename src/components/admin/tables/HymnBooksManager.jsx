@@ -31,7 +31,7 @@ const HymnBooksManager = () => {
 
   // File upload states
   const [coverFile, setCoverFile] = useState(null)
-  const [pdfFile, setPdfFile] = useState(null)
+  const [hymnFile, setHymnFile] = useState(null) // Changed from pdfFile to hymnFile
   const [coverPreview, setCoverPreview] = useState(null)
 
   useEffect(() => {
@@ -65,7 +65,7 @@ const HymnBooksManager = () => {
     setEditingHymnBook(null)
     setCoverPreview(null)
     setCoverFile(null)
-    setPdfFile(null)
+    setHymnFile(null)
     setShowModal(true)
   }
 
@@ -73,7 +73,7 @@ const HymnBooksManager = () => {
     setEditingHymnBook(hymnBook)
     setCoverPreview(hymnBook.cover_image_url)
     setCoverFile(null)
-    setPdfFile(null)
+    setHymnFile(null)
     setShowModal(true)
   }
 
@@ -111,6 +111,13 @@ const HymnBooksManager = () => {
     const file = e.target.files[0]
     if (!file) return
 
+    // Validate file size (max 50MB for all files)
+    const maxSize = 50 * 1024 * 1024 // 50MB
+    if (file.size > maxSize) {
+      toast.error(`File too large. Maximum size is ${maxSize / (1024 * 1024)}MB`)
+      return
+    }
+
     switch(type) {
       case 'cover':
         setCoverFile(file)
@@ -120,22 +127,30 @@ const HymnBooksManager = () => {
         }
         reader.readAsDataURL(file)
         break
-      case 'pdf':
-        setPdfFile(file)
+      case 'hymn':
+        setHymnFile(file)
         break
     }
   }
 
   const uploadFile = async (file, bucket, folder) => {
     try {
+      if (!file) return null
+      
       const fileExt = file.name.split('.').pop()
       const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
       
       const { error: uploadError } = await supabase.storage
         .from(bucket)
-        .upload(fileName, file)
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        })
 
-      if (uploadError) throw uploadError
+      if (uploadError) {
+        console.error('Upload error details:', uploadError)
+        throw uploadError
+      }
 
       const { data: { publicUrl } } = supabase.storage
         .from(bucket)
@@ -144,6 +159,7 @@ const HymnBooksManager = () => {
       return publicUrl
     } catch (error) {
       console.error(`Error uploading to ${bucket}:`, error)
+      toast.error(`Failed to upload file: ${error.message}`)
       throw error
     }
   }
@@ -151,7 +167,7 @@ const HymnBooksManager = () => {
   const handleSubmit = async (formData) => {
     try {
       let coverUrl = editingHymnBook?.cover_image_url || null
-      let pdfUrl = editingHymnBook?.pdf_url || null
+      let fileUrl = editingHymnBook?.pdf_url || null
 
       // Upload new files if selected
       if (coverFile) {
@@ -164,14 +180,14 @@ const HymnBooksManager = () => {
         coverUrl = await uploadFile(coverFile, 'hymn-covers', 'covers')
       }
       
-      if (pdfFile) {
+      if (hymnFile) {
         if (editingHymnBook?.pdf_url) {
           const oldPath = editingHymnBook.pdf_url.split('/').pop()
           await supabase.storage
             .from('hymn-pdfs')
             .remove([oldPath])
         }
-        pdfUrl = await uploadFile(pdfFile, 'hymn-pdfs', 'pdfs')
+        fileUrl = await uploadFile(hymnFile, 'hymn-pdfs', 'pdfs')
       }
 
       const hymnBookData = {
@@ -182,7 +198,7 @@ const HymnBooksManager = () => {
         publication_year: parseInt(formData.publication_year) || null,
         total_hymns: parseInt(formData.total_hymns) || null,
         cover_image_url: coverUrl,
-        pdf_url: pdfUrl,
+        pdf_url: fileUrl,
         language: formData.language,
         is_public: formData.is_public,
         is_featured: formData.is_featured,
@@ -277,7 +293,7 @@ const HymnBooksManager = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
       </div>
     )
   }
@@ -289,7 +305,7 @@ const HymnBooksManager = () => {
         <div className="sm:flex-auto">
           <h1 className="text-2xl font-semibold text-gray-900">Hymn Books Management</h1>
           <p className="mt-2 text-sm text-gray-700">
-            Upload and manage hymn books, including PDF files and cover images.
+            Upload and manage hymn books, including PDFs, Word documents, and other file formats.
           </p>
         </div>
         <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
@@ -474,7 +490,7 @@ const HymnBooksManager = () => {
           languages={languages}
           coverPreview={coverPreview}
           onCoverChange={(e) => handleFileChange(e, 'cover')}
-          onPdfChange={(e) => handleFileChange(e, 'pdf')}
+          onHymnFileChange={(e) => handleFileChange(e, 'hymn')}
           onClose={() => setShowModal(false)}
           onSubmit={handleSubmit}
         />
@@ -484,7 +500,7 @@ const HymnBooksManager = () => {
 }
 
 // Hymn Book Modal Component
-const HymnBookModal = ({ hymnBook, languages, coverPreview, onCoverChange, onPdfChange, onClose, onSubmit }) => {
+const HymnBookModal = ({ hymnBook, languages, coverPreview, onCoverChange, onHymnFileChange, onClose, onSubmit }) => {
   const [formData, setFormData] = useState({
     title: hymnBook?.title || '',
     description: hymnBook?.description || '',
@@ -524,7 +540,7 @@ const HymnBookModal = ({ hymnBook, languages, coverPreview, onCoverChange, onPdf
           <BookOpenIcon className="h-6 w-6 text-indigo-600" />
         </div>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto px-1">
           {/* Basic Info - Two Columns */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Title */}
@@ -614,6 +630,7 @@ const HymnBookModal = ({ hymnBook, languages, coverPreview, onCoverChange, onPdf
                 <option value="French">French</option>
                 <option value="German">German</option>
                 <option value="Latin">Latin</option>
+                <option value="Swahili">Swahili</option>
                 {languages.map(lang => (
                   <option key={lang} value={lang}>{lang}</option>
                 ))}
@@ -674,21 +691,26 @@ const HymnBookModal = ({ hymnBook, languages, coverPreview, onCoverChange, onPdf
               </div>
             </div>
 
-            {/* PDF Upload */}
+            {/* Hymn Book File Upload */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 <DocumentIcon className="h-4 w-4 inline mr-1" />
-                PDF File
+                Hymn Book File (PDF, DOC, DOCX, EPUB, etc.)
               </label>
               <input
                 type="file"
-                accept=".pdf"
-                onChange={onPdfChange}
+                accept="*/*"
+                onChange={onHymnFileChange}
                 className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
               />
-              {hymnBook?.pdf_url && !pdfFile && (
-                <p className="mt-1 text-xs text-gray-500">Current PDF exists</p>
+              {hymnBook?.pdf_url && (
+                <p className="mt-1 text-xs text-gray-500">
+                  Current file: {hymnBook.pdf_url.split('/').pop()}
+                </p>
               )}
+              <p className="mt-1 text-xs text-gray-400">
+                Accepted formats: Any file type (PDF, DOC, DOCX, EPUB, etc.) • Max size: 50MB
+              </p>
             </div>
           </div>
 

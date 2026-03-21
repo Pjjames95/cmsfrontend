@@ -49,8 +49,8 @@ const ServiceProgramManager = () => {
   const [imagePreview, setImagePreview] = useState(null)
 
   const serviceTypes = [
-    { value: 'first_sunday_service', label: 'First Sunday Service', icon: '⛪', color: 'bg-purple-100 text-purple-800' },
-    { value: 'second_sunday_service', label: 'Second Sunday Service', icon: '⛪', color: 'bg-purple-100 text-purple-800' },
+    { value: 'fsunday_service', label: 'First Sunday Service', icon: '⛪', color: 'bg-purple-100 text-purple-800' },
+    { value: 'sunday_service', label: 'Second Sunday Service', icon: '⛪', color: 'bg-purple-100 text-purple-800' },
     { value: 'wednesday_service', label: 'Wednesday Service', icon: '📖', color: 'bg-blue-100 text-blue-800' },
     { value: 'prayer_meeting', label: 'Prayer Meeting', icon: '🙏', color: 'bg-green-100 text-green-800' },
     { value: 'bible_study', label: 'Bible Study', icon: '📚', color: 'bg-yellow-100 text-yellow-800' },

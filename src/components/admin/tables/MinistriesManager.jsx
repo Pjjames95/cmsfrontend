@@ -34,27 +34,26 @@ const MinistriesManager = () => {
   const fetchMinistries = async () => {
     try {
       setLoading(true)
+      console.log('Fetching ministries...') // Debug log
+      
       const { data, error } = await supabase
         .from('ministries')
-        .select(`
-          *,
-          leader:leader_id (
-            email,
-            full_name
-          )
-        `)
+        .select('*')
         .order('name', { ascending: true })
       
       if (error) throw error
 
+      console.log('Fetched ministries count:', data?.length) // Debug log
+      console.log('Fetched ministries:', data) // Debug log
+
       // Format the data
       const formattedData = data.map(ministry => ({
         ...ministry,
-        leader_name: ministry.leader?.full_name || ministry.leader_name || 'Not assigned',
-        leader_email: ministry.leader?.email || ''
+        leader_name: ministry.leader_name || 'Not assigned'
       }))
       
       setMinistries(formattedData)
+      
     } catch (error) {
       console.error('Error fetching ministries:', error)
       toast.error('Failed to load ministries')
@@ -96,6 +95,28 @@ const MinistriesManager = () => {
     if (!confirm(`Are you sure you want to delete the ministry "${ministry.name}"?`)) return
 
     try {
+      // First, check if there are any registrations linked to this ministry
+      const { data: registrations, error: regError } = await supabase
+        .from('ministry_registrations')
+        .select('id')
+        .eq('ministry_id', ministry.id)
+        .limit(1)
+
+      if (registrations && registrations.length > 0) {
+        toast.error('Cannot delete ministry with active registrations. Please reassign or delete registrations first.')
+        return
+      }
+
+      // Delete image from storage if exists
+      if (ministry.image_url) {
+        const imagePath = ministry.image_url.split('/').pop()
+        await supabase.storage
+          .from('ministry-images')
+          .remove([imagePath])
+          .catch(err => console.log('Error deleting image:', err))
+      }
+
+      // Delete the ministry
       const { error } = await supabase
         .from('ministries')
         .delete()
@@ -104,13 +125,15 @@ const MinistriesManager = () => {
       if (error) throw error
       
       toast.success('Ministry deleted successfully')
-      fetchMinistries()
+      
+      // Refresh the ministries list
+      await fetchMinistries()
+      
     } catch (error) {
       console.error('Error deleting ministry:', error)
-      toast.error('Failed to delete ministry')
+      toast.error('Failed to delete ministry: ' + (error.message || 'Unknown error'))
     }
   }
-
   const handleImageChange = (e) => {
     const file = e.target.files[0]
     if (file) {
@@ -445,27 +468,16 @@ const MinistryModal = ({ ministry, leaders, imagePreview, onImageChange, onClose
               {/* Leader Selection */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <UserIcon className="h-4 w-4 inline mr-1" />
                   Ministry Leader
                 </label>
-                <select
+                <input
+                  type="text"
                   className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  value={formData.leader_id}
-                  onChange={(e) => {
-                    const leader = leaders.find(l => l.id === e.target.value)
-                    setFormData({
-                      ...formData,
-                      leader_id: e.target.value,
-                      leader_name: leader?.full_name || ''
-                    })
-                  }}
-                >
-                  <option value="">Select a leader</option>
-                  {leaders.map(leader => (
-                    <option key={leader.id} value={leader.id}>
-                      {leader.full_name || leader.email}
-                    </option>
-                  ))}
-                </select>
+                  value={formData.leader_name}
+                  onChange={(e) => setFormData({...formData, leader_name: e.target.value})}
+                  placeholder="Enter ministry leader name"
+                />
               </div>
 
               {/* Meeting Time */}

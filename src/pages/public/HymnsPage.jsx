@@ -94,7 +94,7 @@ const HymnsPage = () => {
 
   const handleDownload = async (book) => {
     if (!book.pdf_url) {
-      toast.error('No PDF available for this hymn book')
+      toast.error('No file available for this hymn book')
       return
     }
 
@@ -102,23 +102,35 @@ const HymnsPage = () => {
       // Increment download count
       await publicAPI.incrementHymnBookDownloadCount(book.id)
 
-      // Open PDF in new tab (user can save from there)
-      window.open(book.pdf_url, '_blank')
+      // Open file in new tab for download
+      const response = await fetch(book.pdf_url)
+      const blob = await response.blob()
+      const downloadUrl = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = downloadUrl
+      
+      // Get file extension from URL or default to 'file'
+      const fileExt = book.pdf_url.split('.').pop().split('?')[0]
+      link.download = `${book.title}.${fileExt}`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(downloadUrl)
       
       toast.success('Download started')
     } catch (error) {
       console.error('Error downloading:', error)
-      toast.error('Failed to download hymn book')
+      toast.error('Failed to download file')
     }
   }
 
   const handleReadOnline = (book) => {
     if (!book.pdf_url) {
-      toast.error('No PDF available for this hymn book')
+      toast.error('No file available for this hymn book')
       return
     }
     
-    // Open PDF in new tab for reading
+    // Open the file in a new tab
     window.open(book.pdf_url, '_blank')
     
     // Increment view count
