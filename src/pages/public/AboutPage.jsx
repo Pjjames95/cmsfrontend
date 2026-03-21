@@ -91,9 +91,30 @@ const AboutPage = () => {
               international missions.
             </p>
           </div>
-          <div className="bg-gray-200 h-96 rounded-lg flex items-center justify-center">
-              <img src={churchLogo} alt="Church Building" className="h-96 object-cover rounded-lg" />
-          </div>
+          <div className="bg-gray-200 h-96 rounded-lg flex items-center justify-center overflow-hidden">
+          <img 
+            src="/images/church.jpg" 
+            alt="Church Building" 
+            className="w-full h-full object-cover rounded-lg"
+            onError={(e) => {
+              console.error('Image failed to load:', e.target.src)
+              e.target.onerror = null
+              e.target.style.display = 'none'
+              // Show fallback
+              const parent = e.target.parentElement
+              if (parent) {
+                parent.innerHTML = `
+                  <div class="w-full h-full bg-linear-to-r from-indigo-500 to-purple-600 flex items-center justify-center">
+                    <div class="text-center text-white">
+                      <span class="text-6xl mb-4 block">⛪</span>
+                      <p class="text-xl font-semibold">Grace Church</p>
+                    </div>
+                  </div>
+                `
+              }
+            }}
+          />
+        </div>
         </div>
       </div>
 
