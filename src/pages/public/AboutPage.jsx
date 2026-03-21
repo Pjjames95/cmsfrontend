@@ -1,5 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import churchLogo from '../assets/church.jpg'
 import { 
   HeartIcon,
   UserGroupIcon,
@@ -91,7 +92,7 @@ const AboutPage = () => {
             </p>
           </div>
           <div className="bg-gray-200 h-96 rounded-lg flex items-center justify-center">
-              <img src="src/assets/church.jpg" alt="Church Building" className="h-96 object-cover rounded-lg" />
+              <img src={churchLogo} alt="Church Building" className="h-96 object-cover rounded-lg" />
           </div>
         </div>
       </div>
