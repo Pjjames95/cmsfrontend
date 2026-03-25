@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import { supabase } from '../../../lib/supabase'
+import { supabase, sanitizedDb } from '../../../lib/supabaseClient'
+import { publicAPI } from '../../../lib/publicAPI'
 import { useAdminAuth } from '../../../hooks/useAdminAuth'
+import { validateFile, ALLOWED_MIME_TYPES, FILE_SIZE_LIMITS } from '../../../utils/fileValidation'
 import { 
   PencilIcon, 
   TrashIcon, 
@@ -134,10 +136,48 @@ const SermonsManager = () => {
     }
   }
 
-  const handleFileChange = (e, type) => {
+  const handleFileChange = async (e, type) => {
     const file = e.target.files[0]
     if (!file) return
 
+    // Determine file type and options
+    let validationType = 'default'
+    let options = {}
+    
+    switch(type) {
+      case 'audio':
+        validationType = 'audio'
+        options = {
+          allowedTypes: ALLOWED_MIME_TYPES.audio,
+          sizeLimit: FILE_SIZE_LIMITS.audio
+        }
+        break
+      case 'image':
+        validationType = 'image'
+        options = {
+          allowedTypes: ALLOWED_MIME_TYPES.image,
+          sizeLimit: FILE_SIZE_LIMITS.image,
+          verifySignature: true
+        }
+        break
+      case 'notes':
+        validationType = 'document'
+        options = {
+          allowedTypes: ALLOWED_MIME_TYPES.document,
+          sizeLimit: FILE_SIZE_LIMITS.document
+        }
+        break
+    }
+
+    // Validate file
+    const { isValid, errors } = await validateFile(file, validationType, options)
+    
+    if (!isValid) {
+      errors.forEach(error => toast.error(error))
+      return
+    }
+
+    // Proceed with file upload
     switch(type) {
       case 'audio':
         setAudioFile(file)
@@ -151,7 +191,7 @@ const SermonsManager = () => {
         reader.readAsDataURL(file)
         break
       case 'notes':
-        setNotesFile(file)  // This will now work because notesFile is defined
+        setNotesFile(file)
         break
     }
   }

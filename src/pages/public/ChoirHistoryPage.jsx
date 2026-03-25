@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { publicAPI } from '../../lib/supabase'
+import { sanitizeHtml } from '../../utils/sanitize'
 import { 
   UserGroupIcon,
   MusicalNoteIcon,

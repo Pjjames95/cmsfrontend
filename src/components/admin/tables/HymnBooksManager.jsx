@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import { supabase } from '../../../lib/supabase'
+import { supabase, sanitizedDb } from '../../../lib/supabaseClient'
+import { publicAPI } from '../../../lib/publicAPI'
 import { useAdminAuth } from '../../../hooks/useAdminAuth'
+import { validateFile, ALLOWED_MIME_TYPES, FILE_SIZE_LIMITS } from '../../../utils/fileValidation'
 import { 
   PencilIcon, 
   TrashIcon, 
@@ -107,17 +109,24 @@ const HymnBooksManager = () => {
     }
   }
 
-  const handleFileChange = (e, type) => {
+  const handleFileChange = async (e, type) => {
     const file = e.target.files[0]
     if (!file) return
 
-    // Validate file size (max 50MB for all files)
-    const maxSize = 50 * 1024 * 1024 // 50MB
-    if (file.size > maxSize) {
-      toast.error(`File too large. Maximum size is ${maxSize / (1024 * 1024)}MB`)
-      return
+    // For hymn books, we allow all document types
+    if (type === 'hymn') {
+      const { isValid, errors } = await validateFile(file, 'hymn', {
+        allowedTypes: ALLOWED_MIME_TYPES.hymn,
+        sizeLimit: FILE_SIZE_LIMITS.hymn
+      })
+      
+      if (!isValid) {
+        errors.forEach(error => toast.error(error))
+        return
+      }
+      
+      setHymnFile(file)
     }
-
     switch(type) {
       case 'cover':
         setCoverFile(file)

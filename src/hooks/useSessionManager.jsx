@@ -219,6 +219,19 @@ export const useSessionManager = () => {
     checkInitialSession()
   }, [handleSessionExpiry])
 
+  useEffect(() => {
+  const regenerateSession = async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session) {
+      // Force token refresh
+      await supabase.auth.refreshSession()
+    }
+  }
+  
+  // Regenerate session on login
+  regenerateSession()
+}, [])
+
   return {
     showWarning,
     extendSession,

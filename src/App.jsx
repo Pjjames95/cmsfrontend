@@ -1,6 +1,7 @@
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
+import { SanitizationProvider } from './context/SanitizationContext'
 
 // Admin Auth Provider
 import { AdminAuthProvider } from './hooks/useAdminAuth'
@@ -56,6 +57,7 @@ const MinistryRegistrationsManagerPage = () => <div>Ministry Registrations (Comi
 
 function App() {
   return (
+    <SanitizationProvider>
     <Router>
       <AdminAuthProvider>
         <Toaster 
@@ -161,6 +163,7 @@ function App() {
         </Routes>
       </AdminAuthProvider>
     </Router>
+    </SanitizationProvider>
   )
 }
 

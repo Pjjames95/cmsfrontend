@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { publicAPI } from '../../lib/supabase'
 import { supabase } from '../../lib/supabase'
+import { validateMinistryRegistration } from '../../utils/validation'
+import FormError from '../../components/common/FormError'
 import { 
   UserGroupIcon,
   CheckCircleIcon,
@@ -31,6 +33,7 @@ const MinistryRegistrationPage = () => {
   const [existingRegistration, setExistingRegistration] = useState(null)
   const [lookupEmail, setLookupEmail] = useState('')
   const [lookingUp, setLookingUp] = useState(false)
+  const [errors, setErrors] = useState({})
 
   const [formData, setFormData] = useState({
     first_name: '',
@@ -167,6 +170,15 @@ const MinistryRegistrationPage = () => {
 
   const handleSubmit = async (e) => {
   e.preventDefault()
+
+  const validationErrors = validateMinistryRegistration(formData)
+  setErrors(validationErrors)
+  
+  if (Object.keys(validationErrors).length > 0) {
+    toast.error('Please fix the errors before submitting')
+    return
+  }
+
   setSubmitting(true)
 
   try {
@@ -352,8 +364,11 @@ const MinistryRegistrationPage = () => {
                       required
                       value={formData.first_name}
                       onChange={handleInputChange}
-                      className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                      className={`w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm ${
+                        errors.first_name ? 'border-red-500' : ''
+                      }`}
                     />
+                    <FormError error={errors.first_name} />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">

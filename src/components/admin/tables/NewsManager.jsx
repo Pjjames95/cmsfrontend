@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { supabase } from '../../../lib/supabase'
+import { supabase, sanitizedDb } from '../../../lib/supabaseClient'
+import { publicAPI } from '../../../lib/publicAPI'
 import { useAdminAuth } from '../../../hooks/useAdminAuth'
 import { 
   PencilIcon, 
