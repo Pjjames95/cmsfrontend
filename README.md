@@ -22,16 +22,16 @@ Supabase account (free tier)
 
 Git
 
-Installation Steps
-1. Clone the Repository
+**Installation Steps**
+**1. Clone the Repository**
 bash
-git clone https://github.com/yourusername/cmsfrontend.git
+git clone https://github.com/Pjjames95/cmsfrontend.git
 cd grace-church-cms
-2. Install Dependencies
+**2. Install Dependencies**
 bash
 npm install
-3. Set Up Supabase
-a. Create a new Supabase project:
+**3. Set Up Supabase**
+**a. Create a new Supabase project:**
 
 Go to supabase.com
 
@@ -46,7 +46,7 @@ Choose a region close to your users
 b. Run the database schema:
 Copy all SQL from the database-schema.sql file (provided below) and run in Supabase SQL editor.
 
-c. Set up storage buckets:
+**c. Set up storage buckets:**
 Create these buckets in Supabase Storage:
 
 public - For public images
@@ -65,10 +65,10 @@ hymn-covers - For hymn book covers
 
 hymn-pdfs - For hymn book files
 
-4. Environment Configuration
+**4. Environment Configuration**
 Create a .env file in the project root:
 
-env
+**env**
 VITE_SUPABASE_URL=https://your-project-id.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key-here
 Get these values from:
@@ -79,7 +79,7 @@ Project URL is your VITE_SUPABASE_URL
 
 anon public key is your VITE_SUPABASE_ANON_KEY
 
-5. Database Schema Setup
+**5. Database Schema Setup**
 Run this SQL in your Supabase SQL editor:
 
 sql
@@ -357,24 +357,24 @@ CREATE INDEX idx_sermons_date ON sermons(date_preached);
 CREATE INDEX idx_news_published ON news(published_at);
 CREATE INDEX idx_ministry_registrations_email ON ministry_registrations(email);
 CREATE INDEX idx_projects_status ON projects(status);
-6. Create Admin User
+**6. Create Admin User**
 sql
 -- Create an admin user (run after creating the user in Supabase Auth)
 INSERT INTO roles (user_id, role) 
 VALUES ('your-user-id-here', 'super_admin');
-7. Run Development Server
+**7. Run Development Server**
 bash
 npm run dev
 The application will be available at http://localhost:5173
 
-8. Build for Production
+**8. Build for Production**
 bash
 npm run build
 The build output will be in the dist folder.
 
 
 ## Optional 
-🚢 Deployment to Vercel
+**🚢 Deployment to Vercel**
 Automatic Deployment (Recommended)
 Push your code to GitHub
 
@@ -396,7 +396,7 @@ Install Command: npm install
 
 Deploy
 
-Manual Deployment
+**Manual Deployment**
 bash
 # Install Vercel CLI
 npm i -g vercel
@@ -413,7 +413,7 @@ vercel env add VITE_SUPABASE_ANON_KEY
 
 # Deploy to production
 vercel --prod
-📁 Project Structure
+**📁 Project Structure**
 text
 src/
 ├── components/
@@ -439,12 +439,12 @@ src/
 Variable	Description	Required
 VITE_SUPABASE_URL	Your Supabase project URL	Yes
 VITE_SUPABASE_ANON_KEY	Your Supabase anonymous key	Yes
-📝 Available Scripts
+**📝 Available Scripts**
 bash
 npm run dev      # Start development server
 npm run build    # Build for production
 npm run preview  # Preview production build locally
-🔒 Security Best Practices
+**🔒 Security Best Practices**
 Always use environment variables for sensitive data
 
 Enable Row Level Security on all tables
@@ -463,9 +463,9 @@ Use strong passwords for admin accounts
 
 Backup your database regularly
 
-🐛 Troubleshooting
+**🐛 Troubleshooting**
 Common Issues & Solutions
-Issue: Images not loading
+**Issue**: **Images not loading**
 
 Ensure images are in public/images/ folder
 
@@ -473,7 +473,7 @@ Use path /images/filename.jpg
 
 Check Supabase storage bucket permissions
 
-Issue: Authentication errors
+**Issue**: **Authentication errors**
 
 Verify Supabase credentials in .env
 
@@ -481,13 +481,13 @@ Check RLS policies
 
 Ensure user has role assigned in roles table
 
-Issue: 404 on page refresh
+**Issue**: **404 on page refresh**
 
 Verify vercel.json has rewrite rules
 
 Check that public/_redirects file exists
 
-Issue: File upload fails
+**Issue**: **File upload fails**
 
 Check storage bucket permissions
 
@@ -495,7 +495,7 @@ Verify file size limits
 
 Check file type restrictions
 
-📊 Performance Optimization
+**📊 Performance Optimization**
 Lazy load images using loading="lazy"
 
 Optimize images before upload (compress)
@@ -508,7 +508,7 @@ Cache Supabase responses where appropriate
 
 Use code splitting with React.lazy
 
-🔄 Continuous Updates
+**🔄 Continuous Updates**
 To keep your project up to date:
 
 bash
@@ -529,5 +529,5 @@ Tailwind CSS Documentation
 
 Vite Documentation
 
-🎉 Congratulations!
+**🎉 Congratulations!**
 You've successfully set up the Grace Church CMS. The application is now ready for use! For any issues or feature requests, please open an issue on GitHub.
