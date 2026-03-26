@@ -25,7 +25,7 @@ Git
 Installation Steps
 1. Clone the Repository
 bash
-git clone https://github.com/yourusername/grace-church-cms.git
+git clone https://github.com/yourusername/cmsfrontend.git
 cd grace-church-cms
 2. Install Dependencies
 bash
